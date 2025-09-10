@@ -11,7 +11,7 @@ def train_test_split(data_matrix: FloatTensor, labels:Tensor, frac_test: float, 
     return tts(data_matrix, labels, test_size=frac_test, random_state=seed)
 
 def subsample_from_config(
-        config:str, 
+        config:str|Dict, 
         data_matrix: NDArray[np.float32], 
     ) -> FloatTensor:
 
