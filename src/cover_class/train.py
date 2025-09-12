@@ -29,7 +29,7 @@ def setup_training_from_config(
             with h5py.File(hdf5, 'r') as f:
                 file_spectra = f['spectra'][:]
                 subsampled_spectra = subsample_from_config(config, file_spectra)
-                labels = torch.full(file_spectra.shape[0], i)
+                labels = torch.full((subsampled_spectra.shape[0],), i)
 
                 X_train, X_test, Y_train, Y_yest = train_test_split(subsampled_spectra, labels, config['subsample']['test-fraction'])
 
