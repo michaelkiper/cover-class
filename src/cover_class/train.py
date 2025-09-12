@@ -22,6 +22,7 @@ def setup_training_from_config(
     config = read_config(config)
     for i, d in enumerate(config['datasets']):
         hdf5_list = config['datasets'][d]
+        if hdf5_list is None: continue
         
         # subsampling and train test split will happen on a per file basis
         for hdf5 in hdf5_list:
