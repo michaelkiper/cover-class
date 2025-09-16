@@ -37,7 +37,7 @@ def run_simulation(
         data_args: DataArgs, 
         device:    Device = Device("cpu")
     
-    ) -> Tuple[FloatTensor, CharTensor]:
+    ) -> Tuple[FloatTensor, LongTensor]:
 
     sim_args.to(device)
     data_args.to(device)
@@ -91,7 +91,7 @@ def run_simulation(
             device
         )
 
-        return resulting_real_spectra, classes # type: ignore[return-value]
+        return resulting_real_spectra, classes.long() # type: ignore[return-value]
 
 
 def _0_init_simulation_state(

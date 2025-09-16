@@ -19,7 +19,6 @@ simulation:
   alpha_uniform_high: 10.
   white_noise: 0.0001
   noise_covariance_csv: example.csv
-  noise-file: example.csv
 subsample:
   test-fraction: 0.2
   selected-method: convex-hull
@@ -46,7 +45,6 @@ subsample:
     random_state:
   lhs:
     num_pc: 1
-    n_samples: 10
     hypercubes_per_dimension: 3
     samples_per_hypercube: 3
 dataloader:
