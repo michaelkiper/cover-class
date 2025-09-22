@@ -1,4 +1,5 @@
 from typing import Tuple, Dict
+import torch
 from torch import FloatTensor, Tensor
 from numpy.typing import NDArray
 import numpy as np
@@ -17,17 +18,16 @@ def subsample_from_config(
 
     subsample_config:Dict = read_config(config)['subsample']
     method:str = str(subsample_config['selected-method']).lower()
-    assert (method_config := subsample_config.get(method, None)) is not None, f'config for {method} not found'
     
     match method:
         case 'convex-hull':
-            return convex_hull(data_matrix, **method_config)
+            return convex_hull(data_matrix, **subsample_config[method])
         case 'kmeans':
-            return kmeans(data_matrix, **method_config)
+            return kmeans(data_matrix, **subsample_config[method])
         case 'kmedoids':
-            return kmedoids(data_matrix, **method_config)
+            return kmedoids(data_matrix, **subsample_config[method])
         case 'lhs':
-            return lhs(data_matrix, **method_config)
+            return lhs(data_matrix, **subsample_config[method])
         case _:
-            raise ValueError(f'Unsupported method: {method}')
+            return FloatTensor(torch.from_numpy(data_matrix).to(torch.float32))
     return FloatTensor() # here for mypy
