@@ -7,7 +7,7 @@
 ```
 from cover_class.train import setup_training_from_config
 
-dataloader, test_set, train_set = setup_training_from_config(
+dataloader, X_test, Y_test = setup_training_from_config(
     '/my/path/config.yaml',
     batch_size,
     shuffle = True,
