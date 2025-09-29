@@ -22,3 +22,6 @@ datasets:
     water:
       - http:example.com
       - /some/path
+resampling-targets:
+  target-wavelengths: emit_wls.npy
+  target-fwhm: emit_fwhm.npy
