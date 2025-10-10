@@ -54,11 +54,12 @@ class OrchestratorDataset(IterableDataset):
     >>> old = OrchestratorDataset(args)
     >>> dl = DataLoader(old, batch_size=None)
     >>> # NOTE: The `batch_size` in the dataloader must be set to `None`
-    >>> for X, Y in dl:
+    >>> for X, Y, f in dl:
     >>>     ...
     '''
     args: OrchestratorDatasetArgs
     shuffle = True
+    return_fractions = False
 
     step = 0
     static_epoch = 0
@@ -71,11 +72,12 @@ class OrchestratorDataset(IterableDataset):
     def __init__(self, 
                 args: OrchestratorDatasetArgs, 
                 shuffle: bool = True, 
+                return_fractions: bool = False, 
             ) -> None:
         self.args = args; self.shuffle = shuffle
         if self.args._using_static: self.__shuffle__()
 
-    def __iter__(self) -> Iterator[Tuple[torch.FloatTensor, torch.Tensor]]:
+    def __iter__(self) -> Iterator[Tuple[torch.FloatTensor, torch.Tensor, Optional[torch.FloatTensor]]]:
         ''' This iterator does not stop '''
         def make_one_hot(y:torch.Tensor) -> torch.Tensor:
             if self.is_simulated_batch:
@@ -98,15 +100,14 @@ class OrchestratorDataset(IterableDataset):
                 self.static_samples_seen += len(idx)
                 if end >= len(self.args.static_data)-1: # type: ignore
                     self.__reset__()
-                
                 labels = make_one_hot(self.args.static_labels[idx])# type: ignore
-                yield self.args.static_data[idx], labels # type: ignore
+                yield self.args.static_data[idx], labels, None # type: ignore
 
             elif self.args._using_sim:
                 self.is_simulated_batch = True
                 # mypy doesn't catch self.args._using_sim
-                data, labels = sim.run_simulation(self.args.sim_config_args, self.args.sim_data_args) # type: ignore
-                yield data, make_one_hot(labels)
+                data, labels, fracs = sim.run_simulation(self.args.sim_config_args, self.args.sim_data_args, self.return_fractions) # type: ignore
+                yield data, make_one_hot(labels), fracs
 
             else: raise StopIteration()
 
