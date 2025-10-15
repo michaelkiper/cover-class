@@ -1,5 +1,7 @@
 from typing import Tuple, Dict
 import torch
+from typing import Tuple, Any, Optional, List
+import torch
 from torch import FloatTensor, Tensor
 from numpy.typing import NDArray
 import numpy as np
@@ -31,3 +33,21 @@ def subsample_from_config(
         case _:
             return FloatTensor(torch.from_numpy(data_matrix).to(torch.float32))
     return FloatTensor() # here for mypy
+
+def drop_bad_bands(
+        data_matrix: FloatTensor,
+        banddef: Tensor, 
+        drop_wl_ranges: Optional[List[List[int]]] = None,
+    ) -> FloatTensor:
+    """
+    References https://github.com/emit-sds/SpecTf/blob/main/spectf/utils.py#L69
+    Removes bands/wavelengths of high uncertainty from a single spectra
+    or an array of spectras.
+    """
+    if drop_wl_ranges is None or not len(drop_wl_ranges):
+        return data_matrix
+    
+    mask = torch.ones_like(banddef, dtype=torch.bool)
+    for low, high in drop_wl_ranges:
+        mask ^= (banddef >= low) & (banddef <= high)
+    return FloatTensor(data_matrix[..., mask])
