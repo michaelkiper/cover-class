@@ -35,10 +35,10 @@ def subsample_from_config(
     return FloatTensor() # here for mypy
 
 def drop_bad_bands(
-        data_matrix: FloatTensor,
-        banddef: Tensor, 
+        data_matrix: NDArray[np.float32],
+        banddef: NDArray, 
         drop_wl_ranges: Optional[List[List[int]]] = None,
-    ) -> FloatTensor:
+    ) -> NDArray[np.float32]:
     """
     References https://github.com/emit-sds/SpecTf/blob/main/spectf/utils.py#L69
     Removes bands/wavelengths of high uncertainty from a single spectra
@@ -47,7 +47,8 @@ def drop_bad_bands(
     if drop_wl_ranges is None or not len(drop_wl_ranges):
         return data_matrix
     
-    mask = torch.ones_like(banddef, dtype=torch.bool)
+    mask = np.ones_like(banddef, dtype=bool)
     for low, high in drop_wl_ranges:
         mask ^= (banddef >= low) & (banddef <= high)
-    return FloatTensor(data_matrix[..., mask])
+    spectra = np.delete(data_matrix, ~mask, axis=-1)
+    return spectra
