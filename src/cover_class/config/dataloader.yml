@@ -13,6 +13,7 @@ datasets:
   ash+char:
   snow+ice:
   water:
+generalization-test-set: /some/path/to/generalization-test-set.hdf5
 simulation:
   n_components: [1,5]
   n_classes_in_subsets: 3

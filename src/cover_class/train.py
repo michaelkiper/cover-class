@@ -18,7 +18,7 @@ def setup_training_from_config(
         shuffle: bool = True,
         seed: Optional[int] = None,
         subsampled_files_outdir: str = ''
-    ) -> Tuple[DataLoader, FloatTensor, Tensor]:
+    ) -> Tuple[DataLoader, FloatTensor, Tensor, FloatTensor, Tensor]:
     """
     :param: simulated_test_set_n_rows = 0 means don't return a simulated set
 
@@ -65,9 +65,17 @@ def setup_training_from_config(
         LongTensor(train_labels.to(dtype=torch.long)),
         batch_size,
         shuffle,
-    )        
+    )
 
-    return odl, FloatTensor(test_spectra), test_labels
+    # finally, get the generalization test set
+    generalization_set_path: str = config['generalization-test-set']
+    with h5py.File(generalization_set_path, 'r') as f: 
+        generalization_spectra = f['spectra'][:]
+        generalization_wavelengths = f.attrs['wavelengths']
+        generalization_spectra = FloatTensor(drop_bad_bands(generalization_spectra, generalization_wavelengths, drop_bands))
+        generalization_labels = f['labels'][:]
+
+    return odl, FloatTensor(test_spectra), test_labels, generalization_spectra, generalization_labels
 
 def make_simulation_test_set(
         odl: DataLoader,
