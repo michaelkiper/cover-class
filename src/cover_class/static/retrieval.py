@@ -10,7 +10,7 @@ import requests # type: ignore[import]
 import json
 
 from cover_class.utils import read_config
-from cover_class.static.preprocessor import interior_interpolation
+from cover_class.static.preprocessor import interior_interpolation, resample_emit_wls
 
 
 def download(uri: str) -> Tuple[NDArray[np.float32], NDArray[np.float32]]:
@@ -89,6 +89,10 @@ def generate_hdf5_from_config(config_path:str) -> None:
     outdir = ds['output-directory']
     assert Path(outdir).is_dir(), f"'output-directory': {outdir} is not a directory"
 
+    rtc = config['resampling-targets']
+    target_wls: NDArray[np.float32] = np.array(np.load(rtc['target-wavelengths'])).astype(np.float32)
+    target_fwhm: NDArray[np.float32] = np.array(np.load(rtc['target-fwhm'])).astype(np.float32)
+
     for d in (ds_classes := ds['classes']):
         if ds_classes[d] == None: continue
         for location in ds_classes[d]:
@@ -98,7 +102,10 @@ def generate_hdf5_from_config(config_path:str) -> None:
 
             # 2. interpolate the wavelengths
             spectra = spectra[~np.isnan(spectra).any(axis=1)]
-            spectra_interp, target_wavelengths = interior_interpolation(spectra, file_wavelengths)
+            # spectra_interp, target_wavelengths = interior_interpolation(spectra, file_wavelengths)
+            spectra_resample, target_wavelengths = resample_emit_wls(
+                spectra, file_wavelengths, target_wls, target_fwhm
+            )
 
             # 3. save hdf5 file
             outname = make_hdf5(
@@ -106,7 +113,7 @@ def generate_hdf5_from_config(config_path:str) -> None:
                 outdir, 
                 d, 
                 target_wavelengths, 
-                spectra_interp
+                spectra_resample
             )
             print(f"Wrote file {outname}")
 
