@@ -22,6 +22,8 @@ class SimulationArgs(Struct):
     return_fractions: bool
     glint_scalar_range: Tuple[Optional[float], Optional[float]]
     water_classes: List[int]
+    class_names: List[str]
+    forced_fractions: Dict[str, List[Tuple[float,float]]]
 
     def __post_init__(self):
         assert len(self.n_components) == self.n_classes, f"Number of classes, {self.n_classes}, must match the number of component sampling ranges, {len(self.n_components)}"
@@ -57,6 +59,10 @@ def args_from_config(config: Dict|str, data_matrix:FloatTensor, labels:Tensor, b
         if enabled and dataset_name in sim_config['n_components']
     ]
 
+    class_names = [c for c in list(config['datasets'].values()) if c is not None]
+    ffracs = sim_config.get("forced_fraction_test_set",None)
+    assert isinstance(ffracs, dict) or ffracs is None, "simulation/forced_fraction_test_set needs to contain key-value pairs"
+
     s = SimulationArgs(
         n_iters = batch_size,
         n_classes = n_classes,
@@ -69,9 +75,11 @@ def args_from_config(config: Dict|str, data_matrix:FloatTensor, labels:Tensor, b
         white_noise = sim_config['white_noise'],
         noise_scalar = sim_config['noise_scalar'],
         noise_covariance = FloatTensor(torch.from_numpy(noise_cov).to(torch.float32)) if noise_cov is not None else None,
-        return_fractions=sim_config["return_fractions"],
-        glint_scalar_range=(sim_config["glint_lower_scalar"], sim_config["glint_upper_scalar"]),
-        water_classes=[i for i in range(len(config['datasets'])) if 'water' in list(config['datasets'].keys())[i].lower()],
+        return_fractions = sim_config["return_fractions"],
+        glint_scalar_range = (sim_config["glint_lower_scalar"], sim_config["glint_upper_scalar"]),
+        water_classes = [i for i in range(len(config['datasets'])) if 'water' in list(config['datasets'].keys())[i].lower()],
+        class_names = class_names,
+        forced_fractions = ffracs or {},
     )
 
     d = DataArgs(
